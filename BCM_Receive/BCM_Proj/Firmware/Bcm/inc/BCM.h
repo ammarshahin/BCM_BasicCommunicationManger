@@ -13,7 +13,6 @@
 /*				              Files Includes                            */
 /************************************************************************/
 #include "Typedefs.h"
-#include "Bcm_PBCfg.h"
 
 /************************************************************************/
 /*                               CONSTANTS                               */
@@ -21,21 +20,11 @@
 
 #define BCM_ID				'A'
 #define MAX_DATA_SEND		1000
-#define BCM_OVERHEAD		2
-#define MAX_DATA_RECEIVED	(MAX_DATA_SEND+BCM_OVERHEAD)
 
 /************************************************************************/
 /*                          PRIMITIVE TYPES                             */
 /************************************************************************/
 typedef void (*ptrBCMFunCallBk_t)(void);
-
-
-
-/************************************************************************/
-/*                       FUNCTION-LIKE MACROS                           */
-/************************************************************************/
-
-
 
 /************************************************************************/
 /*                               ENUMS                                  */
@@ -56,11 +45,19 @@ typedef enum{
 	INVALID_ID                  ,
 }EnmBCMError_t;
 
-/************************************************************************/
-/*                       STRUCTS AND UNIONS                              */
-/************************************************************************/
+
+typedef enum{
+	UART  ,
+	SPI   ,
+	I2C   ,
+}EnumBCM_ComPeriph_type;
 
 
+typedef enum{
+	SEND_MODE         ,
+	RECEIVE_MODE      ,
+	SEND_RECEIVE_MODE ,
+}EnumBCM_ComMode_type;
 
 /************************************************************************/
 /*                       FUNCTION PROTOTYPES                            */
@@ -123,7 +120,7 @@ void BCM_TxDispatcher(void);
 /**
  * Function : BCM_RxDispatch
  * Description: This Function is used to construct the frame by initializing every element in the structure used
- * Then we lock buffer to make sure that no one corrupts the data which will be sent
+ * Then we lock buffer to make sure that no INITIAL_VALUE_ONE corrupts the data which will be sent
  * @return Status: of the Function according to the Error handling
  **/
 EnmBCMError_t BCM_Tx_SetupBuffer(uint8 *Buffer,uint16 Size);

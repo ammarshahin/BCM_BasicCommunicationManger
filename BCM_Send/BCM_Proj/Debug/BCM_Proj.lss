@@ -19,15 +19,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   7 .debug_abbrev 00000e9c  00000000  00000000  00003937  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   00002385  00000000  00000000  000047d3  2**0
+  8 .debug_line   0000238e  00000000  00000000  000047d3  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  00000dd4  00000000  00000000  00006b58  2**2
+  9 .debug_frame  00000dd4  00000000  00000000  00006b64  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    0000158d  00000000  00000000  0000792c  2**0
+ 10 .debug_str    000015c8  00000000  00000000  00007938  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00001daa  00000000  00000000  00008eb9  2**0
+ 11 .debug_loc    00001daa  00000000  00000000  00008f00  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 000002b0  00000000  00000000  0000ac63  2**0
+ 12 .debug_ranges 000002b0  00000000  00000000  0000acaa  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -1297,31 +1297,19 @@ int main(void)
      8ea:	08 95       	ret
 
 000008ec <SPI_Read>:
- * Description: this function is to Receive a data by the SPI 
- * @param data the symbol to be sent
- * @return the Received data
- */
-uint8 SPI_Read()
-{
      8ec:	cf 93       	push	r28
      8ee:	df 93       	push	r29
      8f0:	cd b7       	in	r28, 0x3d	; 61
      8f2:	de b7       	in	r29, 0x3e	; 62
-	return SPI_SPDR;
      8f4:	8f e2       	ldi	r24, 0x2F	; 47
      8f6:	90 e0       	ldi	r25, 0x00	; 0
      8f8:	fc 01       	movw	r30, r24
      8fa:	80 81       	ld	r24, Z
-}
      8fc:	df 91       	pop	r29
      8fe:	cf 91       	pop	r28
      900:	08 95       	ret
 
 00000902 <__vector_12>:
-
-
-ISR_T(SPI_STC_vect)
-{
      902:	1f 92       	push	r1
      904:	0f 92       	push	r0
      906:	00 90 5f 00 	lds	r0, 0x005F	; 0x80005f <__TEXT_REGION_LENGTH__+0x7e005f>
@@ -1343,31 +1331,22 @@ ISR_T(SPI_STC_vect)
      928:	df 93       	push	r29
      92a:	cd b7       	in	r28, 0x3d	; 61
      92c:	de b7       	in	r29, 0x3e	; 62
-	Recived = SPI_Read();
      92e:	0e 94 76 04 	call	0x8ec	; 0x8ec <SPI_Read>
      932:	80 93 96 00 	sts	0x0096, r24	; 0x800096 <Recived>
-	Gpio_PortWrite(MYPORTA,Recived);
      936:	80 91 96 00 	lds	r24, 0x0096	; 0x800096 <Recived>
      93a:	68 2f       	mov	r22, r24
      93c:	80 e0       	ldi	r24, 0x00	; 0
      93e:	0e 94 98 02 	call	0x530	; 0x530 <Gpio_PortWrite>
-	/* This Block of code only once at the first send which is the init time */
-	if(Count_gEnumBcm_Tx_Flag == FALSE)
      942:	80 91 94 00 	lds	r24, 0x0094	; 0x800094 <Count_gEnumBcm_Tx_Flag>
      946:	90 91 95 00 	lds	r25, 0x0095	; 0x800095 <Count_gEnumBcm_Tx_Flag+0x1>
      94a:	89 2b       	or	r24, r25
      94c:	51 f4       	brne	.+20     	; 0x962 <__vector_12+0x60>
-	{
-	Time_Init = Recived ;
      94e:	80 91 96 00 	lds	r24, 0x0096	; 0x800096 <Recived>
      952:	80 93 a0 00 	sts	0x00A0, r24	; 0x8000a0 <Time_Init>
-	Count_gEnumBcm_Tx_Flag = TRUE;
      956:	81 e0       	ldi	r24, 0x01	; 1
      958:	90 e0       	ldi	r25, 0x00	; 0
      95a:	90 93 95 00 	sts	0x0095, r25	; 0x800095 <Count_gEnumBcm_Tx_Flag+0x1>
      95e:	80 93 94 00 	sts	0x0094, r24	; 0x800094 <Count_gEnumBcm_Tx_Flag>
-	}
-	Speed = Recived;
      962:	80 91 96 00 	lds	r24, 0x0096	; 0x800096 <Recived>
      966:	88 2f       	mov	r24, r24
      968:	90 e0       	ldi	r25, 0x00	; 0
@@ -1399,12 +1378,6 @@ ISR_T(SPI_STC_vect)
      9a6:	18 95       	reti
 
 000009a8 <Timers_SetCounter>:
-	{
-		Gpio_PinWrite(SWPWM_2_PORT,SWPWM_2_PIN,TRUE);
-		Timers_timer2_Delay_ns(time_On_ns);
-		Gpio_PinWrite(SWPWM_2_PORT,SWPWM_2_PIN,FALSE);
-		Timers_timer2_Delay_ns(time_Off_ns);
-	}
      9a8:	cf 93       	push	r28
      9aa:	df 93       	push	r29
      9ac:	cd b7       	in	r28, 0x3d	; 61
@@ -1694,11 +1667,6 @@ ISR_T(SPI_STC_vect)
      c3a:	08 95       	ret
 
 00000c3c <__vector_9>:
-}
-
-
-ISR_T(TIMER1_OVF_vect)
-{
      c3c:	1f 92       	push	r1
      c3e:	0f 92       	push	r0
      c40:	00 90 5f 00 	lds	r0, 0x005F	; 0x80005f <__TEXT_REGION_LENGTH__+0x7e005f>
@@ -1720,10 +1688,8 @@ ISR_T(TIMER1_OVF_vect)
      c62:	df 93       	push	r29
      c64:	cd b7       	in	r28, 0x3d	; 61
      c66:	de b7       	in	r29, 0x3e	; 62
-	Timer_gEnumBcm_Tx_Flag = TRUE;
      c68:	81 e0       	ldi	r24, 0x01	; 1
      c6a:	80 93 9f 00 	sts	0x009F, r24	; 0x80009f <Timer_gEnumBcm_Tx_Flag>
-	Timers_SetCounter(TIMER1,Gv_Count);
      c6e:	80 91 9b 00 	lds	r24, 0x009B	; 0x80009b <Gv_Count>
      c72:	90 91 9c 00 	lds	r25, 0x009C	; 0x80009c <Gv_Count+0x1>
      c76:	cc 01       	movw	r24, r24
@@ -1755,12 +1721,6 @@ ISR_T(TIMER1_OVF_vect)
      cae:	18 95       	reti
 
 00000cb0 <UART_Init>:
-	while(data[i]){	
-		UART_Send(data[i]);
-		i++;
-	}
-	return OK;
-}
      cb0:	ef 92       	push	r14
      cb2:	ff 92       	push	r15
      cb4:	0f 93       	push	r16
@@ -2033,12 +1993,6 @@ ISR_T(TIMER1_OVF_vect)
      ee2:	08 95       	ret
 
 00000ee4 <UART_SetCallBack>:
- * Description: this function is to Send a String(array of char) by the UART to the TTL
- * @param Send_String the string to be sent
- * @return the Status of the function [OK Or NOT_OK] 
- */
-void UART_SetCallBack(ptrUARTFunCallBk_t FunName)
-{
      ee4:	cf 93       	push	r28
      ee6:	df 93       	push	r29
      ee8:	00 d0       	rcall	.+0      	; 0xeea <UART_SetCallBack+0x6>
@@ -2046,12 +2000,10 @@ void UART_SetCallBack(ptrUARTFunCallBk_t FunName)
      eec:	de b7       	in	r29, 0x3e	; 62
      eee:	9a 83       	std	Y+2, r25	; 0x02
      ef0:	89 83       	std	Y+1, r24	; 0x01
-	gPtrCallBk = FunName;
      ef2:	89 81       	ldd	r24, Y+1	; 0x01
      ef4:	9a 81       	ldd	r25, Y+2	; 0x02
      ef6:	90 93 9e 00 	sts	0x009E, r25	; 0x80009e <gPtrCallBk+0x1>
      efa:	80 93 9d 00 	sts	0x009D, r24	; 0x80009d <gPtrCallBk>
-}
      efe:	00 00       	nop
      f00:	0f 90       	pop	r0
      f02:	0f 90       	pop	r0
@@ -2060,10 +2012,6 @@ void UART_SetCallBack(ptrUARTFunCallBk_t FunName)
      f08:	08 95       	ret
 
 00000f0a <__vector_15>:
-
-
-ISR_T(USART_TXC_vect)
-{
      f0a:	1f 92       	push	r1
      f0c:	0f 92       	push	r0
      f0e:	00 90 5f 00 	lds	r0, 0x005F	; 0x80005f <__TEXT_REGION_LENGTH__+0x7e005f>
@@ -2085,12 +2033,10 @@ ISR_T(USART_TXC_vect)
      f30:	df 93       	push	r29
      f32:	cd b7       	in	r28, 0x3d	; 61
      f34:	de b7       	in	r29, 0x3e	; 62
-	if( gPtrCallBk != NULL)
      f36:	80 91 9d 00 	lds	r24, 0x009D	; 0x80009d <gPtrCallBk>
      f3a:	90 91 9e 00 	lds	r25, 0x009E	; 0x80009e <gPtrCallBk+0x1>
      f3e:	89 2b       	or	r24, r25
      f40:	31 f0       	breq	.+12     	; 0xf4e <__vector_15+0x44>
-		gPtrCallBk();
      f42:	80 91 9d 00 	lds	r24, 0x009D	; 0x80009d <gPtrCallBk>
      f46:	90 91 9e 00 	lds	r25, 0x009E	; 0x80009e <gPtrCallBk+0x1>
      f4a:	fc 01       	movw	r30, r24

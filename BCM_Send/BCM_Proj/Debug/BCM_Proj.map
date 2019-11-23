@@ -1077,19 +1077,19 @@ END GROUP
  .debug_abbrev  0x00000ccb      0x16f Mcal/Uart/src/UART.o
  .debug_abbrev  0x00000e3a       0x62 Mcal/Uart/src/UART_Lcfg.o
 
-.debug_line     0x00000000     0x2385
+.debug_line     0x00000000     0x238e
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000      0x115 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.2.209/gcc/dev/atmega32/avr5/crtatmega32.o
  .debug_line    0x00000115      0x1ff Ecual/Led/src/Led.o
  .debug_line    0x00000314      0x4f6 Firmware/Bcm/src/BCM.o
- .debug_line    0x0000080a       0x7c Firmware/Bcm/src/Bcm_PBCfg.o
- .debug_line    0x00000886       0xd6 main.o
- .debug_line    0x0000095c      0x80b Mcal/Gpio/src/Gpio.o
- .debug_line    0x00001167      0x1ca Mcal/Interrupts/src/Interrupts.o
- .debug_line    0x00001331      0x2db Mcal/Spi/src/SPI.o
- .debug_line    0x0000160c      0xa43 Mcal/Timer/src/Timers.o
- .debug_line    0x0000204f      0x2c0 Mcal/Uart/src/UART.o
- .debug_line    0x0000230f       0x76 Mcal/Uart/src/UART_Lcfg.o
+ .debug_line    0x0000080a       0x85 Firmware/Bcm/src/Bcm_PBCfg.o
+ .debug_line    0x0000088f       0xd6 main.o
+ .debug_line    0x00000965      0x80b Mcal/Gpio/src/Gpio.o
+ .debug_line    0x00001170      0x1ca Mcal/Interrupts/src/Interrupts.o
+ .debug_line    0x0000133a      0x2db Mcal/Spi/src/SPI.o
+ .debug_line    0x00001615      0xa43 Mcal/Timer/src/Timers.o
+ .debug_line    0x00002058      0x2c0 Mcal/Uart/src/UART.o
+ .debug_line    0x00002318       0x76 Mcal/Uart/src/UART_Lcfg.o
 
 .debug_frame    0x00000000      0xdd4
  *(.debug_frame)
@@ -1102,28 +1102,28 @@ END GROUP
  .debug_frame   0x000005a4      0x6e4 Mcal/Timer/src/Timers.o
  .debug_frame   0x00000c88      0x14c Mcal/Uart/src/UART.o
 
-.debug_str      0x00000000     0x158d
+.debug_str      0x00000000     0x15c8
  *(.debug_str)
  .debug_str     0x00000000      0x196 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.2.209/gcc/dev/atmega32/avr5/crtatmega32.o
  .debug_str     0x00000196      0x192 Ecual/Led/src/Led.o
                                 0x1c6 (size before relaxing)
- .debug_str     0x00000328      0x4af Firmware/Bcm/src/BCM.o
-                                0x604 (size before relaxing)
- .debug_str     0x000007d7       0x20 Firmware/Bcm/src/Bcm_PBCfg.o
-                                0x258 (size before relaxing)
- .debug_str     0x000007f7       0x4f main.o
-                                0x1c6 (size before relaxing)
- .debug_str     0x00000846      0x176 Mcal/Gpio/src/Gpio.o
+ .debug_str     0x00000328      0x49f Firmware/Bcm/src/BCM.o
+                                0x5f4 (size before relaxing)
+ .debug_str     0x000007c7       0x20 Firmware/Bcm/src/Bcm_PBCfg.o
+                                0x248 (size before relaxing)
+ .debug_str     0x000007e7       0x4f main.o
+                                0x1b3 (size before relaxing)
+ .debug_str     0x00000836      0x176 Mcal/Gpio/src/Gpio.o
                                 0x2ef (size before relaxing)
- .debug_str     0x000009bc       0x5f Mcal/Interrupts/src/Interrupts.o
+ .debug_str     0x000009ac       0x5f Mcal/Interrupts/src/Interrupts.o
                                 0x1d2 (size before relaxing)
- .debug_str     0x00000a1b       0xf1 Mcal/Spi/src/SPI.o
+ .debug_str     0x00000a0b      0x13c Mcal/Spi/src/SPI.o
                                 0x2a6 (size before relaxing)
- .debug_str     0x00000b0c      0x94e Mcal/Timer/src/Timers.o
+ .debug_str     0x00000b47      0x94e Mcal/Timer/src/Timers.o
                                 0xb23 (size before relaxing)
- .debug_str     0x0000145a      0x116 Mcal/Uart/src/UART.o
+ .debug_str     0x00001495      0x116 Mcal/Uart/src/UART.o
                                 0x29f (size before relaxing)
- .debug_str     0x00001570       0x1d Mcal/Uart/src/UART_Lcfg.o
+ .debug_str     0x000015ab       0x1d Mcal/Uart/src/UART_Lcfg.o
                                 0x202 (size before relaxing)
 
 .debug_loc      0x00000000     0x1daa

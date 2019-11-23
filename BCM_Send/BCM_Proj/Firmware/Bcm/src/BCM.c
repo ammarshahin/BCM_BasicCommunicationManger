@@ -4,8 +4,6 @@
  * Created: 11/17/2019 7:27:02 PM
  *  Author: Ammar Shahin
  */ 
-
-
 /************************************************************************/
 /*				              Files Includes                            */
 /************************************************************************/
@@ -22,18 +20,17 @@
 #define INITIAL_VALUE_ZERO			0
 #define INITIAL_VALUE_ONE			1
 
+#define BCM_OVERHEAD		2
+#define MAX_DATA_RECEIVED	(MAX_DATA_SEND+BCM_OVERHEAD)
 /************************************************************************/
 /*                         LOCAL Structures                            */
 /************************************************************************/
-
-
 
 typedef struct{
 	uint8 *PtrFunc    ;
 	uint16 BufferSize ;
 	uint8  CheckSum    ;
 }StrBCM_Buffer_type;
-
 
 /************************************************************************/
 /*							Local Enums                                 */
@@ -73,12 +70,6 @@ typedef enum{
 }EnumBCM_Lock_type;
 
 /************************************************************************/
-/*                     LOCAL FUNCTIONS PROTOTYPES                       */
-/************************************************************************/
-
-
-
-/************************************************************************/
 /*                       GLOBAL STATIC VARIABLES                        */
 /************************************************************************/
 static uint16 gBufferRxIndex = INITIAL_VALUE_ZERO;
@@ -98,10 +89,6 @@ static EnumBCM_RxFlag_type gEnumBcm_Rx_Flag = NOT_RECEIVED;
 static EnumBCM_TxFlag_type gEnumBcm_Tx_Flag = NOT_SENT;
 
 static EnumBCM_SizeFlag_type gEnumBcm_SizeFlag = FIRST_BYTE;
-/************************************************************************/
-/*                       GLOBAL EXTERN VARIABLES                        */
-/************************************************************************/
-
 
 /************************************************************************/
 /*                           APIs IMPLEMENTATION                        */
@@ -160,7 +147,6 @@ EnmBCMError_t BCM_Init(ptrBCMFunCallBk_t CallBkFun)
 		default:
 			break;
 	}
-	
 	return API_State;
 }
 
@@ -172,7 +158,6 @@ EnmBCMError_t BCM_Init(ptrBCMFunCallBk_t CallBkFun)
  * @param Size : the Size of the Buffer in the App Layer
  * @return Status: of the Setup according to the Error handling
  **/
-
 EnmBCMError_t BCM_Rx_SetupBuffer(uint8 *Buffer,uint16 Size)
 {
 	EnmBCMError_t API_State = OK_t;
@@ -197,7 +182,6 @@ EnmBCMError_t BCM_Rx_SetupBuffer(uint8 *Buffer,uint16 Size)
 	{
 		API_State = BUFFER_LOCKED;
 	}
-	
 	return API_State;
 }
 
@@ -210,9 +194,9 @@ EnmBCMError_t BCM_Rx_SetupBuffer(uint8 *Buffer,uint16 Size)
 EnmBCMError_t BCM_RxDispatcher(void)
 {
 	EnmBCMError_t API_State = OK_t;
-	if( gEnumBcm_Rx_Lock == LOCKED)
+	if( LOCKED == gEnumBcm_Rx_Lock )
 	{
-		if(gEnumBcm_Rx_Flag == RECEIVED)
+		if( RECEIVED == gEnumBcm_Rx_Flag )
 		{
 			gEnumBcm_Rx_Flag = NOT_RECEIVED;
 			switch( gEnumBcm_Rx_state )
@@ -230,13 +214,13 @@ EnmBCMError_t BCM_RxDispatcher(void)
 					}
 					break;
 			case SIZE_RECEIVE_STATE:
-					if( gEnumBcm_SizeFlag == FIRST_BYTE)
+					if( FIRST_BYTE == gEnumBcm_SizeFlag )
 					{
 						gBufferRxSize = gStrBcmBuffer.PtrFunc[FIRST_BYTE];
 						gBufferRxIndex++;
 						gEnumBcm_SizeFlag = SECOND_BYTE;	
 					}
-					else if(gEnumBcm_SizeFlag == SECOND_BYTE)
+					else if( SECOND_BYTE == gEnumBcm_SizeFlag )
 					{
 						gBufferRxSize |= ( gStrBcmBuffer.PtrFunc[SECOND_BYTE] << SHIFT_FACTOR );
 						gBufferRxIndex++;

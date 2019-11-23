@@ -4,8 +4,6 @@
  * Created: 11/17/2019 7:27:02 PM
  *  Author: Ammar Shahin
  */ 
-
-
 /************************************************************************/
 /*				              Files Includes                            */
 /************************************************************************/
@@ -13,27 +11,25 @@
 #include "Bcm_PBCfg.h"
 #include "UART.h"
 
-
 /************************************************************************/
 /*                               LOCAL MACROS                           */
 /************************************************************************/
-#define SHIFT_FACTOR 8
-#define ID_BYTE      0
-#define ZERO         0
-#define ONE          1
+#define SHIFT_FACTOR				8
+#define ID_BYTE						0
+#define INITIAL_VALUE_ZERO			0
+#define INITIAL_VALUE_ONE			1
 
+#define BCM_OVERHEAD		2
+#define MAX_DATA_RECEIVED	(MAX_DATA_SEND+BCM_OVERHEAD)
 /************************************************************************/
 /*                         LOCAL Structures                            */
 /************************************************************************/
 
-
-
 typedef struct{
-	uint8 *BcmPtrBuffer  ;
-	uint16 BcmBufferSize ;
-	uint8 BcmCheckSum    ;
-}BCM_Buffer_t;
-
+	uint8 *PtrFunc    ;
+	uint16 BufferSize ;
+	uint8  CheckSum    ;
+}StrBCM_Buffer_type;
 
 /************************************************************************/
 /*							Local Enums                                 */
@@ -43,65 +39,55 @@ typedef enum{
 	SIZE_RECEIVE_STATE		 ,
 	DATA_RECEIVE_STATE		 ,
 	CHECKSUM_RECEIVE_STATE   ,
-}BCM_Rx_State_t;
+}EnumBCM_RxState_type;
 
 typedef enum{
 	ID_SEND_STATE		 ,
 	SIZE_SEND_STATE		 ,
 	DATA_SEND_STATE		 ,
 	CHECKSUM_SEND_STATE   ,
-}BCM_Tx_State_t;
+}EnumBCM_TxState_type;
 
 typedef enum{
 	RECEIVED	 ,
 	NOT_RECEIVED ,
-}BCM_Rx_Flag_t;
+}EnumBCM_RxFlag_type;
 
 typedef enum{
 	SENT_DONE	 ,
 	NOT_SENT	 ,
-}BCM_Tx_Flag_t;
+}EnumBCM_TxFlag_type;
 
 typedef enum{
 	FIRST_BYTE	  = 1,
 	SECOND_BYTE   = 2,
-}BCM_Rx_SizeFlag_t;
+}EnumBCM_SizeFlag_type;
 
 typedef enum{
 	UNLOCKED ,
 	LOCKED   ,
-}BCM_Lock_t;
-
-/************************************************************************/
-/*                     LOCAL FUNCTIONS PROTOTYPES                       */
-/************************************************************************/
-
-
+}EnumBCM_Lock_type;
 
 /************************************************************************/
 /*                       GLOBAL STATIC VARIABLES                        */
 /************************************************************************/
-static uint16 gBufferRxIndex = ZERO;
-static uint16 gBufferTxIndex = ZERO;
+static uint16 gBufferRxIndex = INITIAL_VALUE_ZERO;
+static uint16 gBufferTxIndex = INITIAL_VALUE_ZERO;
 
-static uint16 LengthSizeRx = ZERO;
+static uint16 gBufferRxSize = INITIAL_VALUE_ZERO;
 
-static BCM_Lock_t gBcm_Rx_Lock;
-static BCM_Lock_t gBcm_Tx_Lock;
+static EnumBCM_Lock_type gEnumBcm_Rx_Lock;
+static EnumBCM_Lock_type gEnumBcm_Tx_Lock;
 
-static BCM_Buffer_t gBcmBuffer;
+static StrBCM_Buffer_type gStrBcmBuffer;
 
-static BCM_Rx_State_t gBcm_Rx_state = ID_RECEIVE_STATE;
-static BCM_Tx_State_t gBcm_Tx_state = ID_SEND_STATE;
+static EnumBCM_RxState_type gEnumBcm_Rx_state = ID_RECEIVE_STATE;
+static EnumBCM_TxState_type gEnumBcm_Tx_state = ID_SEND_STATE;
 
-static BCM_Rx_Flag_t gBcm_Rx_Flag = NOT_RECEIVED;
-static BCM_Tx_Flag_t gBcm_Tx_Flag = NOT_SENT;
+static EnumBCM_RxFlag_type gEnumBcm_Rx_Flag = NOT_RECEIVED;
+static EnumBCM_TxFlag_type gEnumBcm_Tx_Flag = NOT_SENT;
 
-static BCM_Rx_SizeFlag_t gBcmSizeFlag = FIRST_BYTE;
-/************************************************************************/
-/*                       GLOBAL EXTERN VARIABLES                        */
-/************************************************************************/
-
+static EnumBCM_SizeFlag_type gEnumBcm_SizeFlag = FIRST_BYTE;
 
 /************************************************************************/
 /*                           APIs IMPLEMENTATION                        */
@@ -116,24 +102,24 @@ static BCM_Rx_SizeFlag_t gBcmSizeFlag = FIRST_BYTE;
 EnmBCMError_t BCM_Init(ptrBCMFunCallBk_t CallBkFun)
 {
 	EnmBCMError_t API_State = OK_t;
-	BCM_Cfg_t.Bcm_ID = BCM_ID;
-	gBcm_Rx_Lock = UNLOCKED;
-	gBcm_Tx_Lock = UNLOCKED;
+	StrBCM_Cfg.Bcm_ID = BCM_ID;
+	gEnumBcm_Rx_Lock = UNLOCKED;
+	gEnumBcm_Tx_Lock = UNLOCKED;
 
 	/* The Call Back Setup */
 	if( NULL != CallBkFun)
 	{
-		switch(BCM_Cfg_t.BCM_Rx_or_Tx)
+		switch(StrBCM_Cfg.BCM_Rx_or_Tx)
 		{
 			case RECEIVE_MODE:
-			BCM_Cfg_t.BCMPtr_Rx_FuncCallBk = CallBkFun;
+			StrBCM_Cfg.BCMPtr_Rx_FuncCallBk = CallBkFun;
 			break;
 			case SEND_MODE:
-			BCM_Cfg_t.BCMPtr_Tx_FuncCallBk = CallBkFun;
+			StrBCM_Cfg.BCMPtr_Tx_FuncCallBk = CallBkFun;
 			break;
 			case SEND_RECEIVE_MODE:
-			BCM_Cfg_t.BCMPtr_Rx_FuncCallBk = CallBkFun;
-			BCM_Cfg_t.BCMPtr_Tx_FuncCallBk = CallBkFun;
+			StrBCM_Cfg.BCMPtr_Rx_FuncCallBk = CallBkFun;
+			StrBCM_Cfg.BCMPtr_Tx_FuncCallBk = CallBkFun;
 			break;
 			default:
 			break;
@@ -160,7 +146,6 @@ EnmBCMError_t BCM_Init(ptrBCMFunCallBk_t CallBkFun)
 		default:
 			break;
 	}
-	
 	return API_State;
 }
 
@@ -172,21 +157,20 @@ EnmBCMError_t BCM_Init(ptrBCMFunCallBk_t CallBkFun)
  * @param Size : the Size of the Buffer in the App Layer
  * @return Status: of the Setup according to the Error handling
  **/
-
 EnmBCMError_t BCM_Rx_SetupBuffer(uint8 *Buffer,uint16 Size)
 {
 	EnmBCMError_t API_State = OK_t;
 	
-	if( UNLOCKED == gBcm_Rx_Lock)
+	if( UNLOCKED == gEnumBcm_Rx_Lock)
 	{
 		if(NULL != Buffer)
 		{
-			gBcmBuffer.BcmPtrBuffer = Buffer;
-			gBcmBuffer.BcmBufferSize = Size;
-			gBcmBuffer.BcmCheckSum = ZERO;
-			gBufferRxIndex = ZERO;
-			gBcm_Rx_state = ID_RECEIVE_STATE;
-			gBcmSizeFlag = FIRST_BYTE;
+			gStrBcmBuffer.PtrFunc = Buffer;
+			gStrBcmBuffer.BufferSize = Size;
+			gStrBcmBuffer.CheckSum = INITIAL_VALUE_ZERO;
+			gBufferRxIndex = INITIAL_VALUE_ZERO;
+			gEnumBcm_Rx_state = ID_RECEIVE_STATE;
+			gEnumBcm_SizeFlag = FIRST_BYTE;
 		}
 		else
 		{
@@ -197,7 +181,6 @@ EnmBCMError_t BCM_Rx_SetupBuffer(uint8 *Buffer,uint16 Size)
 	{
 		API_State = BUFFER_LOCKED;
 	}
-	
 	return API_State;
 }
 
@@ -210,18 +193,18 @@ EnmBCMError_t BCM_Rx_SetupBuffer(uint8 *Buffer,uint16 Size)
 EnmBCMError_t BCM_RxDispatcher(void)
 {
 	EnmBCMError_t API_State = OK_t;
-	if( gBcm_Rx_Lock == LOCKED)
+	if( LOCKED == gEnumBcm_Rx_Lock )
 	{
-		if(gBcm_Rx_Flag == RECEIVED)
+		if( RECEIVED == gEnumBcm_Rx_Flag )
 		{
-			gBcm_Rx_Flag = NOT_RECEIVED;
-			switch( gBcm_Rx_state )
+			gEnumBcm_Rx_Flag = NOT_RECEIVED;
+			switch( gEnumBcm_Rx_state )
 			{
 			case ID_RECEIVE_STATE:
-					if( gBcmBuffer.BcmPtrBuffer[ID_BYTE] == BCM_Cfg_t.Bcm_ID )
+					if( gStrBcmBuffer.PtrFunc[ID_BYTE] == StrBCM_Cfg.Bcm_ID )
 					{
 						gBufferRxIndex++;
-						gBcm_Rx_state = SIZE_RECEIVE_STATE;
+						gEnumBcm_Rx_state = SIZE_RECEIVE_STATE;
 					}
 					else
 					{
@@ -230,20 +213,20 @@ EnmBCMError_t BCM_RxDispatcher(void)
 					}
 					break;
 			case SIZE_RECEIVE_STATE:
-					if( gBcmSizeFlag == FIRST_BYTE)
+					if( FIRST_BYTE == gEnumBcm_SizeFlag )
 					{
-						LengthSizeRx = gBcmBuffer.BcmPtrBuffer[FIRST_BYTE];
+						gBufferRxSize = gStrBcmBuffer.PtrFunc[FIRST_BYTE];
 						gBufferRxIndex++;
-						gBcmSizeFlag = SECOND_BYTE;	
+						gEnumBcm_SizeFlag = SECOND_BYTE;	
 					}
-					else if(gBcmSizeFlag == SECOND_BYTE)
+					else if( SECOND_BYTE == gEnumBcm_SizeFlag )
 					{
-						LengthSizeRx |= ( gBcmBuffer.BcmPtrBuffer[SECOND_BYTE] << SHIFT_FACTOR );
+						gBufferRxSize |= ( gStrBcmBuffer.PtrFunc[SECOND_BYTE] << SHIFT_FACTOR );
 						gBufferRxIndex++;
 						
-						if( LengthSizeRx <= gBcmBuffer.BcmBufferSize )
+						if( gBufferRxSize <= gStrBcmBuffer.BufferSize )
 						{
-							gBcm_Rx_state = DATA_RECEIVE_STATE;
+							gEnumBcm_Rx_state = DATA_RECEIVE_STATE;
 						}
 						else
 						{
@@ -257,12 +240,12 @@ EnmBCMError_t BCM_RxDispatcher(void)
 					}
 				break;
 			case DATA_RECEIVE_STATE:				
-					gBcmBuffer.BcmCheckSum += gBcmBuffer.BcmPtrBuffer[gBufferRxIndex];
+					gStrBcmBuffer.CheckSum += gStrBcmBuffer.PtrFunc[gBufferRxIndex];
 					gBufferRxIndex++;
 					
-					if( (gBufferRxIndex + BCM_OVERHEAD) == gBcmBuffer.BcmBufferSize)
+					if( (gBufferRxIndex + BCM_OVERHEAD) == gStrBcmBuffer.BufferSize)
 					{
-						gBcm_Rx_state = CHECKSUM_RECEIVE_STATE;
+						gEnumBcm_Rx_state = CHECKSUM_RECEIVE_STATE;
 					}
 					else
 					{
@@ -270,10 +253,10 @@ EnmBCMError_t BCM_RxDispatcher(void)
 					}
 				break;
 			case CHECKSUM_RECEIVE_STATE :
-					if( gBcmBuffer.BcmCheckSum == gBcmBuffer.BcmPtrBuffer[gBufferRxIndex] )
+					if( gStrBcmBuffer.CheckSum == gStrBcmBuffer.PtrFunc[gBufferRxIndex] )
 					{
-						BCM_Cfg_t.BCMPtr_Rx_FuncCallBk();
-						gBcm_Rx_Lock = UNLOCKED;
+						StrBCM_Cfg.BCMPtr_Rx_FuncCallBk();
+						gEnumBcm_Rx_Lock = UNLOCKED;
 					}
 					else
 					{
@@ -303,17 +286,17 @@ EnmBCMError_t BCM_RxDispatcher(void)
 EnmBCMError_t BCM_DeInit(void)
 {
 	EnmBCMError_t API_State = OK;
-	gBufferRxIndex = ZERO;
-	LengthSizeRx = ZERO;
-	gBcm_Rx_Lock = UNLOCKED;
-	gBcm_Tx_Lock = UNLOCKED;
-	gBcmBuffer.BcmBufferSize = ZERO;
-	gBcmBuffer.BcmPtrBuffer = NULL;
-	gBcmBuffer.BcmCheckSum = ZERO;
-	gBcm_Rx_state = ID_RECEIVE_STATE;
-	gBcm_Rx_Flag = NOT_RECEIVED;
-	gBcm_Tx_Flag = NOT_SENT;
-	gBcmSizeFlag = FIRST_BYTE;
+	gBufferRxIndex = INITIAL_VALUE_ZERO;
+	gBufferRxSize = INITIAL_VALUE_ZERO;
+	gEnumBcm_Rx_Lock = UNLOCKED;
+	gEnumBcm_Tx_Lock = UNLOCKED;
+	gStrBcmBuffer.BufferSize = INITIAL_VALUE_ZERO;
+	gStrBcmBuffer.PtrFunc = NULL;
+	gStrBcmBuffer.CheckSum = INITIAL_VALUE_ZERO;
+	gEnumBcm_Rx_state = ID_RECEIVE_STATE;
+	gEnumBcm_Rx_Flag = NOT_RECEIVED;
+	gEnumBcm_Tx_Flag = NOT_SENT;
+	gEnumBcm_SizeFlag = FIRST_BYTE;
 
 	switch(Communication_type)
 	{
@@ -339,7 +322,7 @@ EnmBCMError_t BCM_DeInit(void)
  **/
 void BCM_Tx_Callback(void)
 {
-	gBcm_Tx_Flag = SENT_DONE;
+	gEnumBcm_Tx_Flag = SENT_DONE;
 }
 
 /**
@@ -349,36 +332,36 @@ void BCM_Tx_Callback(void)
  **/
 void BCM_Rx_Callback(void)
 {
-	gBcmBuffer.BcmPtrBuffer[gBufferRxIndex] = UART_Read();
-	gBcm_Rx_Flag = RECEIVED;
-	gBcm_Rx_Lock = LOCKED;
+	gStrBcmBuffer.PtrFunc[gBufferRxIndex] = UART_Read();
+	gEnumBcm_Rx_Flag = RECEIVED;
+	gEnumBcm_Rx_Lock = LOCKED;
 }
 
 
 /**
  * Function : BCM_RxDispatch
  * Description: This Function is used to construct the frame by initializing every element in the structure used
- * Then we lock buffer to make sure that no one corrupts the data which will be sent
+ * Then we lock buffer to make sure that no INITIAL_VALUE_ONE corrupts the data which will be sent
  * @return Status: of the Function according to the Error handling
  **/
 EnmBCMError_t BCM_Tx_SetupBuffer(uint8 *Buffer,uint16 Size)
 {
 	EnmBCMError_t API_State = OK_t;
 	
-	if( UNLOCKED == gBcm_Tx_Lock)
+	if( UNLOCKED == gEnumBcm_Tx_Lock)
 	{
 		if ( NULL != Buffer )
 		{
 			if(Size <= MAX_DATA_SEND)
 			{
-				gBcmBuffer.BcmCheckSum   = ZERO;
-				gBcmBuffer.BcmBufferSize = Size;
-				gBcmBuffer.BcmPtrBuffer  = Buffer;
-				gBcm_Tx_Lock			 = LOCKED;
-				gBcm_Tx_state			 = ID_SEND_STATE;
-				gBufferTxIndex			 = ZERO;
-				gBcm_Tx_Flag			 = SENT_DONE;
-				gBcmSizeFlag			 = FIRST_BYTE;
+				gStrBcmBuffer.CheckSum   = INITIAL_VALUE_ZERO;
+				gStrBcmBuffer.BufferSize = Size;
+				gStrBcmBuffer.PtrFunc  = Buffer;
+				gEnumBcm_Tx_Lock			 = LOCKED;
+				gEnumBcm_Tx_state			 = ID_SEND_STATE;
+				gBufferTxIndex			 = INITIAL_VALUE_ZERO;
+				gEnumBcm_Tx_Flag			 = SENT_DONE;
+				gEnumBcm_SizeFlag			 = FIRST_BYTE;
 			}
 			else
 			{
@@ -405,28 +388,28 @@ EnmBCMError_t BCM_Tx_SetupBuffer(uint8 *Buffer,uint16 Size)
  **/
 void BCM_TxDispatcher(void)
 {
-	if ( LOCKED == gBcm_Tx_Lock )
+	if ( LOCKED == gEnumBcm_Tx_Lock )
 	{
-		if( SENT_DONE == gBcm_Tx_Flag)
+		if( SENT_DONE == gEnumBcm_Tx_Flag)
 		{
-			gBcm_Tx_Flag = NOT_SENT;
-			switch(gBcm_Tx_state)
+			gEnumBcm_Tx_Flag = NOT_SENT;
+			switch(gEnumBcm_Tx_state)
 			{
 				case ID_SEND_STATE:
 					BCM_TxSend(BCM_ID);
-					gBcm_Tx_state = SIZE_SEND_STATE;
+					gEnumBcm_Tx_state = SIZE_SEND_STATE;
 					break;
 				case SIZE_SEND_STATE:
-					if( gBcmSizeFlag == FIRST_BYTE )
+					if( gEnumBcm_SizeFlag == FIRST_BYTE )
 					{
-						BCM_TxSend( (uint8) gBcmBuffer.BcmBufferSize);
-						gBcmSizeFlag = SECOND_BYTE;
+						BCM_TxSend( (uint8) gStrBcmBuffer.BufferSize);
+						gEnumBcm_SizeFlag = SECOND_BYTE;
 					}
 					else if( gBufferTxIndex == SECOND_BYTE )
 					{
-						BCM_TxSend( (uint8)(gBcmBuffer.BcmBufferSize >> SHIFT_FACTOR) );
-						gBcmSizeFlag = FIRST_BYTE;
-						gBcm_Tx_state = DATA_SEND_STATE;
+						BCM_TxSend( (uint8)(gStrBcmBuffer.BufferSize >> SHIFT_FACTOR) );
+						gEnumBcm_SizeFlag = FIRST_BYTE;
+						gEnumBcm_Tx_state = DATA_SEND_STATE;
 					}
 					else
 					{
@@ -434,20 +417,20 @@ void BCM_TxDispatcher(void)
 					}
 					break;
 				case DATA_SEND_STATE:
-					if ( gBufferTxIndex < gBcmBuffer.BcmBufferSize)
+					if ( gBufferTxIndex < gStrBcmBuffer.BufferSize)
 					{
-						BCM_TxSend(gBcmBuffer.BcmPtrBuffer[gBufferTxIndex]);
+						BCM_TxSend(gStrBcmBuffer.PtrFunc[gBufferTxIndex]);
 						gBufferTxIndex++;
-						gBcmBuffer.BcmCheckSum += gBcmBuffer.BcmPtrBuffer[gBufferTxIndex];
+						gStrBcmBuffer.CheckSum += gStrBcmBuffer.PtrFunc[gBufferTxIndex];
 					}
-					else if( gBufferTxIndex == gBcmBuffer.BcmBufferSize )
+					else if( gBufferTxIndex == gStrBcmBuffer.BufferSize )
 					{
-						gBcm_Tx_state = CHECKSUM_SEND_STATE;
+						gEnumBcm_Tx_state = CHECKSUM_SEND_STATE;
 					}
 					break;
 				case CHECKSUM_SEND_STATE:
-					BCM_TxSend(gBcmBuffer.BcmCheckSum);
-					gBcm_Tx_Lock = UNLOCKED;
+					BCM_TxSend(gStrBcmBuffer.CheckSum);
+					gEnumBcm_Tx_Lock = UNLOCKED;
 					BCM_DeInit();
 					break;
 				default:

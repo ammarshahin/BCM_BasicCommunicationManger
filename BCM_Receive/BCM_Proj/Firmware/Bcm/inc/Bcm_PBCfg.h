@@ -17,41 +17,19 @@
 #include "BCM.h"
 
 /************************************************************************/
-/*                               ENUMS                                  */
-/************************************************************************/
-typedef void (*ptrBCMFunCallBk_t)(void);
-
-
-typedef enum{
-	UART  ,
-	SPI   ,
-	I2C   ,
-}BCM_CommunicationPeripheral_t;
-
-
-typedef enum{
-	SEND_MODE         ,
-	RECEIVE_MODE      ,
-	SEND_RECEIVE_MODE ,
-}BCM_ComType_t;
-
-/************************************************************************/
 /*                       STRUCTS AND UNIONS                              */
 /************************************************************************/
-/* This is a Cfg struct for a BCM_Config */
-
-
-
-typedef struct 
-{
+typedef struct{
 	uint8			  Bcm_ID;
-	BCM_ComType_t	  BCM_Rx_or_Tx;
+	EnumBCM_ComMode_type	  BCM_Rx_or_Tx;
 	ptrBCMFunCallBk_t BCMPtr_Rx_FuncCallBk;
 	ptrBCMFunCallBk_t BCMPtr_Tx_FuncCallBk;
-}BCM_Config_t;
+}StrBCM_Cfg_type;
 
-
-extern BCM_Config_t BCM_Cfg_t;
-extern BCM_CommunicationPeripheral_t Communication_type;
+/************************************************************************/
+/*                    Extern Global Variables                           */
+/************************************************************************/
+extern StrBCM_Cfg_type StrBCM_Cfg;
+extern EnumBCM_ComPeriph_type Communication_type;
 
 #endif /* BCM_PBCFG_H_ */
